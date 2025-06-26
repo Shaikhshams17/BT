@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bulk Sender Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+        #numbersList::-webkit-scrollbar { width: 6px; }
+        #numbersList::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+        #numbersList::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        #numbersList::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">📱 WhatsApp Bulk Sender Pro</h1>
+            <p class="text-white/80">Professional bulk messaging solution</p>
+        </div>
+
+        <!-- Main Container -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Authentication Screen -->
+            <div id="authScreen" class="p-8 text-center">
+                <div class="mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-3xl">🔐</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Secure Access</h2>
+                    <p class="text-gray-600">Enter your password to continue</p>
+                </div>
+                
+                <div class="max-w-sm mx-auto">
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        placeholder="Enter password"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors mb-4"
+                    >
+                    <button 
+                        id="loginBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105"
+                    >
+                        Access Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Dashboard -->
+            <div id="mainScreen" class="hidden">
+                <!-- Status Bar -->
+                <div id="statusBar" class="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="pulse-dot w-3 h-3 bg-white rounded-full"></div>
+                        <span class="text-white font-medium">Initializing...</span>
+                    </div>
+                </div>
+
+                <!-- WhatsApp Connection Section -->
+                <div id="connectionSection" class="p-6 border-b">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">WhatsApp Connection</h3>
+                        <div id="phoneDisplay" class="hidden bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <span id="phoneNumber"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Display -->
+                    <div id="qrSection" class="text-center py-8">
+                        <button 
+                            id="connectBtn"
+                            class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                        >
+                            🚀 Connect WhatsApp
+                        </button>
+                        <div id="qrContainer" class="hidden mt-6">
+                            <div class="bg-white p-4 rounded-lg shadow-lg inline-block">
+                                <img id="qrImage" alt="QR Code" class="w-64 h-64 mx-auto">
+                            </div>
+                            <p class="text-gray-600 mt-4">Scan this QR code with your WhatsApp</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Messaging Form -->
+                <div id="messagingSection" class="p-6 hidden">
+                    <form id="bulkForm" class="space-y-6" enctype="multipart/form-data">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Recipients -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">
+                                    📋 Recipients Data (CSV Format)
+                                </label>
+                                <textarea
+                                    id="recipientsText"
+                                    name="recipientsText"
+                                    placeholder="number,name
+1234567890,John Doe
+9876543210,Jane Smith"
+                                    class="w-full h-32 p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                                    required
+                                ></textarea>
+                                <p class="text-gray-500 text-xs mt-1">First line: headers, Following lines: data</p>
+                            </div>
+
+                            <!-- Message Template -->
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">
+                                    💬 Message Template
+                                </label>
+                                <textarea
+                                    id="messageTemplate"
+                                    name="messageTemplate"
+                                    placeholder="Hello {name}, this is your personalized message!"
+                                    class="w-full h-32 p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                                    required
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Photo Upload -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">📸 Attachment (Optional)</label>
+                            <input
+                                type="file"
+                                id="photo"
+                                name="photo"
+                                accept="image/*"
+                                class="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                            >
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-4">
+                            <button
+                                type="submit"
+                                class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105"
+                            >
+                                🚀 Send Bulk Messages
+                            </button>
+                            <button
+                                id="logoutBtn"
+                                type="button"
+                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                            >
+                                🚪 Logout & Switch Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Progress & Results -->
+                <div id="resultsSection" class="p-6 border-t hidden">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Sending Progress</h3>
+                    
+                    <!-- Progress Bar -->
+                    <div id="progressContainer" class="hidden mb-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span id="progressText">Sending messages...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Status Display -->
+                    <div id="bulkStatus" class="mb-4"></div>
+
+                    <!-- Individual Results -->
+                    <div id="numbersList" class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        const ws = new WebSocket(`ws://${window.location.host}`);
+        
+        // DOM elements
+        const authScreen = document.getElementById('authScreen');
+        const mainScreen = document.getElementById('mainScreen');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const statusBar = document.getElementById('statusBar');
+        const connectBtn = document.getElementById('connectBtn');
+        const qrContainer = document.getElementById('qrContainer');
+        const qrImage = document.getElementById('qrImage');
+        const phoneDisplay = document.getElementById('phoneDisplay');
+        const phoneNumber = document.getElementById('phoneNumber');
+        const messagingSection = document.getElementById('messagingSection');
+        const bulkForm = document.getElementById('bulkForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const bulkStatus = document.getElementById('bulkStatus');
+        const numbersList = document.getElementById('numbersList');
+
+        let isAuthenticated = false;
+        let isConnected = false;
+
+        // WebSocket message handler
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            handleWebSocketMessage(data);
+        };
+
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'qr_code':
+                    qrImage.src = data.qrCode;
+                    qrContainer.classList.remove('hidden');
+                    updateStatus('📱 Scan QR code with WhatsApp', 'bg-blue-500');
+                    break;
+                    
+                case 'ready':
+                    isConnected = true;
+                    phoneNumber.textContent = `📱 ${data.phoneNumber}`;
+                    phoneDisplay.classList.remove('hidden');
+                    qrContainer.classList.add('hidden');
+                    messagingSection.classList.remove('hidden');
+                    updateStatus('✅ WhatsApp Connected Successfully!', 'bg-green-500');
+                    break;
+                    
+                case 'disconnected':
+                    isConnected = false;
+                    phoneDisplay.classList.add('hidden');
+                    messagingSection.classList.add('hidden');
+                    updateStatus('❌ WhatsApp Disconnected', 'bg-red-500');
+                    break;
+                    
+                case 'auth_failure':
+                    isConnected = false;
+                    phoneDisplay.classList.add('hidden');
+                    messagingSection.classList.add('hidden');
+                    qrContainer.classList.add('hidden');
+                    updateStatus('❌ Authentication Failed - Try Again', 'bg-red-500');
+                    break;
+                    
+                case 'error':
+                    updateStatus('❌ Connection Error - Please retry', 'bg-red-500');
+                    break;
+                    
+                case 'bulk_start':
+                    resultsSection.classList.remove('hidden');
+                    progressContainer.classList.remove('hidden');
+                    numbersList.innerHTML = '';
+                    break;
+                    
+                case 'message_sent':
+                    updateProgress(data.progress, data.total);
+                    addMessageResult(data.number, data.status);
+                    break;
+                    
+                case 'bulk_complete':
+                    progressContainer.classList.add('hidden');
+                    bulkStatus.innerHTML = `<div class="bg-green-100 text-green-800 p-4 rounded-lg">
+                        <p class="font-semibold">✅ Bulk sending completed!</p>
+                        <p>Successfully sent: ${data.sent} out of ${data.total} messages</p>
+                    </div>`;
+                    break;
+                    
+                case 'logged_out':
+                    isConnected = false;
+                    phoneDisplay.classList.add('hidden');
+                    messagingSection.classList.add('hidden');
+                    qrContainer.classList.add('hidden');
+                    updateStatus('🔄 Ready to connect new WhatsApp account', 'bg-yellow-500');
+                    break;
+            }
+        }
+
+        function updateStatus(message, bgClass) {
+            statusBar.className = `${bgClass} p-4 text-center`;
+            statusBar.innerHTML = `<div class="flex items-center justify-center space-x-2">
+                <div class="pulse-dot w-3 h-3 bg-white rounded-full"></div>
+                <span class="text-white font-medium">${message}</span>
+            </div>`;
+        }
+
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            progressBar.style.width = `${percent}%`;
+            progressPercent.textContent = `${percent}%`;
+            progressText.textContent = `Sending messages... (${current}/${total})`;
+        }
+
+        function addMessageResult(number, status) {
+            const isSuccess = status === 'Sent';
+            const resultHtml = `
+                <div class="flex items-center justify-between p-2 border-b last:border-b-0">
+                    <span class="text-gray-700 font-medium">${number}</span>
+                    <span class="${isSuccess ? 'text-green-600' : 'text-red-600'} text-sm">
+                        ${isSuccess ? '✅' : '❌'} ${status}
+                    </span>
+                </div>
+            `;
+            numbersList.innerHTML += resultHtml;
+            numbersList.scrollTop = numbersList.scrollHeight;
+        }
+
+        // Authentication
+        loginBtn.addEventListener('click', async () => {
+            const password = passwordInput.value;
+            if (!password) return;
+
+            try {
+                const response = await fetch('/authenticate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    isAuthenticated = true;
+                    authScreen.classList.add('hidden');
+                    mainScreen.classList.remove('hidden');
+                    mainScreen.classList.add('fade-in');
+                    updateStatus('🔄 Ready to connect WhatsApp', 'bg-yellow-500');
+                } else {
+                    alert('❌ Invalid password!');
+                }
+            } catch (error) {
+                alert('❌ Authentication failed!');
+            }
+        });
+
+        // Connect WhatsApp
+        connectBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/connect-whatsapp', { method: 'POST' });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    updateStatus('🔄 Initializing WhatsApp connection...', 'bg-blue-500');
+                }
+            } catch (error) {
+                alert('❌ Failed to connect WhatsApp!');
+            }
+        });
+
+        // Handle form submission
+        bulkForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!isConnected) {
+                alert('❌ Please connect WhatsApp first!');
+                return;
+            }
+
+            const formData = new FormData(bulkForm);
+            try {
+                bulkStatus.innerHTML = '<div class="bg-blue-100 text-blue-800 p-4 rounded-lg">🚀 Starting bulk message sending...</div>';
+                
+                const response = await fetch('/send-bulk-messages', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send messages');
+                }
+            } catch (error) {
+                bulkStatus.innerHTML = `<div class="bg-red-100 text-red-800 p-4 rounded-lg">❌ Error: ${error.message}</div>`;
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            if (confirm('🔄 Are you sure you want to logout and switch WhatsApp account?')) {
+                try {
+                    await fetch('/logout', { method: 'POST' });
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+        });
+
+        // Handle Enter key for password
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        // Initial focus
+        passwordInput.focus();
+    </script>
+</body>
+</html>
