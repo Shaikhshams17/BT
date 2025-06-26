@@ -183,8 +183,9 @@
     </div>
 
     <script>
-        // WebSocket connection
-        const ws = new WebSocket(`ws://${window.location.host}`);
+    // Secure WebSocket connection based on protocol
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${protocol}://${window.location.host}`);
         
         // DOM elements
         const authScreen = document.getElementById('authScreen');
